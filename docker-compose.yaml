@@ -1,3 +1,5 @@
+version: '2.2'
+
 services:
   web:
     image: "hemarawal/node-app-batch-6:latest"
