@@ -1,12 +1,32 @@
 pipeline {
-    agent { label "dev-server"}
+    agent any
     
     stages {
         
         stage("code"){
             steps{
-                git url: "https://github.com/LondheShubham153/node-todo-cicd.git", branch: "master"
+                git url: "https://github.com/hemarawal/node-todo-cicd.git", branch: "master"
                 echo 'bhaiyya code clone ho gaya'
+            }
+        }
+         stage("SonarQube Analysis"){
+            steps{
+               withSonarQubeEnv("Sonar"){
+                   sh "$SONAR_HOME/bin/sonar-scanner -Dsonar.projectName=nodetodo -Dsonar.projectKey=nodetodo -X"
+               }
+            }
+        }
+        stage("SonarQube Quality Gates"){
+            steps{
+               timeout(time: 1, unit: "MINUTES"){
+                   waitForQualityGate abortPipeline: false
+               }
+            }
+        }
+         stage("OWASP"){
+            steps{
+                dependencyCheck additionalArguments: '--scan ./', odcInstallation: 'OWASP'
+                dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
             }
         }
         stage("build and test"){
@@ -15,9 +35,9 @@ pipeline {
                 echo 'code build bhi ho gaya'
             }
         }
-        stage("scan image"){
+        stage("Trivy"){
             steps{
-                echo 'image scanning ho gayi'
+                sh "trivy image node-app-batch-6"
             }
         }
         stage("push"){
