@@ -33,11 +33,6 @@ pipeline {
                 echo "Code Built Successfully"
             }
         }
-        stage("Trivy"){
-            steps{
-                sh "trivy image node-app-batch-6"
-            }
-        }
         stage("Push to Private Docker Hub Repo"){
             steps{
                 withCredentials([usernamePassword(credentialsId:"DockerHubCreds",passwordVariable:"dockerPass",usernameVariable:"dockerUser")]){
